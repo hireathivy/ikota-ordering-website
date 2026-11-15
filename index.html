@@ -1,1 +1,109 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iKota Otjiwarongo - Order Now</title>
+<style>
+body{font-family:Arial,sans-serif;background:#fff8e1;margin:0;padding:0;color:#222}
+.header{background:#000;color:#fff;text-align:center;padding:20px 15px}
+.header h1{font-size:42px;margin:0;font-style:italic}
+.header p{margin:5px 0;color:#ffcc00}
+.container{max-width:520px;margin:auto;padding:15px}
+.card{background:#fff;border:2px solid #ffcc00;border-radius:15px;padding:15px;margin-bottom:15px}
+h2{margin-top:0}
+.item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #ddd}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:32px;height:32px;border-radius:50%;border:1px solid #000;background:#ffcc00;font-size:18px;font-weight:bold}
+.qty input{width:35px;text-align:center;border:none;font-size:16px;font-weight:bold}
+select,input[type=text],input[type=tel]{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #ccc;font-size:15px;box-sizing:border-box}
+.delivery{display:flex;gap:10px}
+.delivery label{flex:1;text-align:center;padding:12px;border:2px solid #ddd;border-radius:10px}
+.total{background:#000;color:#fff;border-radius:15px;padding:15px;font-size:16px;line-height:1.8}
+.total b{color:#ffcc00}
+.pay{background:#e8f5e9;border:1px solid #4caf50;border-radius:10px;padding:12px;font-size:14px}
+.orderBtn{display:block;width:100%;background:#25D366;color:#fff;text-align:center;padding:16px;font-size:19px;font-weight:bold;border:none;border-radius:50px;margin-top:15px;text-decoration:none}
+.small{font-size:13px;color:#555;text-align:center}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>iKota</h1>
+<p>Otjiwarongo • Order Now!!</p>
+<p>Instagram: @iKota.__ • WhatsApp: +264 81 499 6902</p>
+</div>
+<div class="container">
+<div class="card"><h2>🍔 1. Choose Your iKota</h2><div id="items"></div></div>
+<div class="card"><h2>✨ 2. Extras</h2><div id="extras"></div><p class="small">Customize your iKota with your favourite extras!</p></div>
+<div class="card"><h2>📦 3. Delivery or Collection?</h2>
+<div class="delivery">
+<label><input type="radio" name="deliveryType" value="delivery" checked onchange="calc()"> <span>Delivery<br><b>N$25</b> in Otjiwarongo</span></label>
+<label><input type="radio" name="deliveryType" value="collection" onchange="calc()"> <span>Collection<br><b>FREE</b></span></label>
+</div>
+<input type="text" id="name" placeholder="Your Name *">
+<input type="tel" id="phone" placeholder="Your Phone Number *">
+<input type="text" id="address" placeholder="Delivery Address (if Delivery)">
+</div>
+<div class="card"><h2>💳 4. Payment</h2>
+<div class="pay"><b>Payment Option: eWallet</b><br>1. Send eWallet to <b>+264 81 499 6902</b><br>2. Send Proof of Payment on WhatsApp after ordering<br>3. Your order will be confirmed once payment is received</div>
+<select id="payMethod" onchange="calc()"><option>eWallet</option><option>Cash on Collection</option></select>
+</div>
+<div class="total" id="summary"></div>
+<a class="orderBtn" href="#" onclick="sendOrder();return false;">🟢 Order on WhatsApp</a>
+<p class="small">Clicking this will open WhatsApp with your full order details, totals + delivery fee already included.</p>
+</div>
+<script>
+const menu=[
+{id:'classic',name:'Classic iKota',desc:'Bread, Chips, Lettuce, Russian, Cheese, Special Sauce',price:40,qty:0},
+{id:'burger',name:'Kota Burger',desc:'Burger Bun, Chips, Russian, Lettuce, Cheese, Special Sauce',price:50,qty:0},
+{id:'rolls',name:'iKota Rolls',desc:'Wrap, Lettuce, Chips, Russian, Cheese, Special Sauce',price:45,qty:0},
+];
+const extrasList=[
+{id:'patty',name:'Chicken/Beef Patty',price:10,qty:0},
+{id:'vienna',name:'Vienna',price:8,qty:0},
+{id:'egg',name:'Egg',price:5,qty:0},
+{id:'polony',name:'French/Onyama Polony',price:5,qty:0},
+];
+function render(){
+let h='';
+menu.forEach((m,i)=>{h+=`<div class="item"><div><b>${m.name} - N$${m.price}</b><br><span>${m.desc}</span></div><div class="qty"><button onclick="changeQty('menu',${i},-1)">-</button><input value="${m.qty}" readonly><button onclick="changeQty('menu',${i},1)">+</button></div></div>`;});
+document.getElementById('items').innerHTML=h;
+let e='';
+extrasList.forEach((x,i)=>{e+=`<div class="extra"><label>${x.name} - N$${x.price}</label><div class="qty"><button onclick="changeQty('extras',${i},-1)">-</button><input value="${x.qty}" readonly><button onclick="changeQty('extras',${i},1)">+</button></div></div>`;});
+document.getElementById('extras').innerHTML=e;calc();
+}
+function changeQty(type,i,d){let arr=type==='menu'?menu:extrasList;arr[i].qty=Math.max(0,arr[i].qty+d);render();}
+function calc(){
+let food=0,lines=[];
+menu.forEach(m=>{if(m.qty>0){food+=m.qty*m.price;lines.push(`${m.qty} x ${m.name} @ N$${m.price} = N$${m.qty*m.price}`)}});
+let exTotal=0;
+extrasList.forEach(x=>{if(x.qty>0){exTotal+=x.qty*x.price;lines.push(`${x.qty} x ${x.name} @ N$${x.price} = N$${x.qty*x.price}`)}});
+let isDelivery=document.querySelector('input[name="deliveryType"]:checked').value==='delivery';
+let deliveryFee=isDelivery?25:0;
+let total=food+exTotal+deliveryFee;
+let pay=document.getElementById('payMethod').value;
+document.getElementById('summary').innerHTML=`🧾 <b>ORDER SUMMARY</b><br>${lines.length?lines.join('<br>'):'No items selected yet'}<br>-------------------------<br>Food: N$${food}<br>Extras: N$${exTotal}<br>Delivery Fee: N$${deliveryFee} ${isDelivery?'(Otjiwarongo)':'(Collection - FREE)'}<br><b>TOTAL PAYABLE: N$${total}</b><br>Payment: ${pay} - Please send Proof of Payment`;
+window._calc={food,exTotal,deliveryFee,total,lines,isDelivery,pay};
+}
+function sendOrder(){
+let name=document.getElementById('name').value.trim();
+let phone=document.getElementById('phone').value.trim();
+let address=document.getElementById('address').value.trim();
+if(!name||!phone){alert('Please enter your Name and Phone Number');return;}
+if(window._calc.total===0){alert('Please add at least 1 item');return;}
+let c=window._calc;
+let msg=`Hello iKota! I would like to order:%0A%0A`;
+msg+=c.lines.join('%0A')+'%0A%0A';
+msg+=`Food: N$${c.food}%0AExtras: N$${c.exTotal}%0A`;
+msg+=`Delivery: ${c.isDelivery?'Delivery - N$25 in Otjiwarongo':'Collection - FREE'}%0A`;
+msg+=`TOTAL PAYABLE: N$${c.total}%0A%0A`;
+msg+=`Name: ${name}%0APhone: ${phone}%0A`;
+if(c.isDelivery) msg+=`Address: ${address}%0A`;
+msg+=`Payment: ${c.pay} (eWallet to +264814996902)%0A`;
+msg+=`I will send Proof of Payment on WhatsApp.`;
+window.open('https://wa.me/264814996902?text='+msg,'_blank');
+}
+render();
+</script>
+</body>
+</html>
